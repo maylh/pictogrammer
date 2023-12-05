@@ -1,0 +1,49 @@
+.page {
+  height: 95vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.homepage-content {
+  text-align: center;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  max-width: 1200px;
+  height: auto;
+  margin:auto;
+  padding: 30px 50px;
+  border: 1px solid;
+  border-radius: 10px;
+}
+
+.button-group {
+  padding: 30px 0px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.info {
+  padding-top: 10px;
+  text-align: start;
+}
+
+.profile-picture {
+  Width: 10%;
+  margin: 20px auto;
+}
+
+.homepage-content .card-header.collapsed {
+  background:#FFEDD2;
+}
+
+.homepage-content .card-header:not(.collapsed) {
+  background:#FFEDD2;
+}
+
+.homepage-content .card-body {
+  background:#FFEDD2;
+}
