@@ -1,0 +1,722 @@
+const { collection } = require("../../config/db");
+const db = require("../../config/db");
+const constants = require("../Constants");
+let word_list = require("./word-list");
+const fs = require('fs');
+let jsonData={};
+
+class Lobby {
+  constructor(id, host) {
+    this.id = id;
+    this.host = host; // Should be an object {id, name}
+    this.state = constants.IN_LOBBY;
+
+    this.notifier = null;
+    this.io = null;
+
+    this.players = new Map(); // Keep track of the players(key = id, value = {id, name, state,profilekey,score})
+    this.connected_players = new Map(); // key = socket id, value = player id
+
+    this.rounds = 1; // Number of rounds in the game
+    this.curr_round = 1; // Current round in the game
+    this.round_state = 0;
+    this.players_guessed = new Set(); //Number of players that correctly guessed the word
+
+    this.drawing_time = 30;
+    this.timer = null; // Timer for the game
+
+    this.drawer = null; // user_id of drawer
+    this.drawer_order = [];
+    this.strokes = []; // Strokes that was sent to the player
+
+    this.interval = null; //Timer interval
+
+    this.word = ""; //word being guessed
+    this.word_list = []; //word options given to drawer. 3 words
+    this.hint = []; //hint to display to all
+    this.numberOfHints = 0;
+
+    this.playing = false;
+  }
+  findSocketId(playerID) {
+    let sockedIdofPlayer;
+    for (let [key, value] of this.connected_players.entries()) {
+      if (value === playerID) sockedIdofPlayer = key;
+    }
+
+    return sockedIdofPlayer;
+  }
+
+  init_sock(notifier_func, io) {
+    this.notifier = notifier_func;
+    this.io = io;
+  }
+
+  getRoundStatus(user_id) {
+    return {
+      rounds: this.rounds,
+      curr_round: this.curr_round,
+      round_state: this.round_state,
+      drawer: {
+        id: this.drawer,
+        name: this.players.get(this.drawer).name,
+      },
+      word_list: this.drawer === user_id ? this.word_list : [],
+      word: this.drawer === user_id ? this.word : "_".repeat(this.word.length),
+      hint: this.hint,
+      strokes: this.strokes,
+      timer: this.timer,
+      playing: this.playing,
+    };
+  }
+
+  changeLobbyState(state) {
+    this.state = state;
+    if (state === constants.IN_GAME) {
+      //Init game settings
+      this.curr_round = 1;
+
+      this.timer = this.drawing_time;
+      // Setting draw order
+      this.drawer_order = Array.from(this.connected_players.values());
+
+      this.newTurn();
+    }
+  }
+
+  newTurn() {
+    this.drawer = this.drawer_order.shift();
+    this.word_list = this.getWordOptions(); // Generate word choices
+    this.round_state = 0; // State to choosing
+    this.players_guessed.clear();
+
+    // Restart timer but do not start it
+    this.playing = false;
+    this.timer = this.drawing_time;
+  }
+
+  startTurn(word) {
+    console.log(`Starting ${this.id} with ${word}`);
+    // this.word_list = word_list;
+    this.round_state = 1;
+    this.word = word; // Current word
+    this.setHints(word);
+
+    setTimeout(() => {
+      this.playing = true;
+      this.startTimer(); // Start timer
+      this.notifier(); // Let everyone know
+    }, 1000);
+  }
+
+  //사전 중복되는 문장 제거
+  dictionarySetup()
+  {
+    const filePath = 'C:\\Users\\kimsi\\OneDrive\\바탕 화면\\pictogrammer-master\\server\\src\\Game\\dictionary.txt';
+
+        // 파일 읽기
+        fs.readFile(filePath, 'utf8', (err, data) => {
+          if (err) {
+            console.error('파일을 읽는 중 오류가 발생했습니다.', err);
+            return;
+          }
+
+          // 파일 내용이 없을 때
+          if (!data.trim()) {
+            console.log('파일이 비어있습니다.');
+            return;
+          }
+
+          const lines = data.split(',');
+          const uniqueLines = Array.from(new Set(lines)); // 중복 제거
+
+          // 중복을 제거한 데이터를 다시 문자열로 변환
+          const updatedData = uniqueLines.join('\n');
+
+          // 파일에 쓰기
+          fs.writeFile(filePath, updatedData, 'utf8', (writeErr) => {
+            if (writeErr) {
+              console.error('파일에 데이터를 쓰는 중 오류가 발생했습니다.', writeErr);
+              return;
+            }
+            console.log('중복된 문장이 제거되었습니다.');
+          });
+        });
+  }
+
+  dictionarySetup2()
+  {
+    const filePath = 'C:\\Users\\kimsi\\OneDrive\\바탕 화면\\pictogrammer-master\\server\\src\\Game\\dictionary.txt';
+
+        // 파일 읽기
+        fs.readFile(filePath, 'utf8', (err, data) => {
+          if (err) {
+            console.error('파일을 읽는 중 오류가 발생했습니다.', err);
+            return;
+          }
+
+          // 파일 내용이 없을 때
+          if (!data.trim()) {
+            console.log('파일이 비어있습니다.');
+            return;
+          }
+
+          const lines = data.split('\n');
+          const uniqueLines = Array.from(new Set(lines)); // 중복 제거
+
+          // 중복을 제거한 데이터를 다시 문자열로 변환
+          const updatedData = uniqueLines.join('\n');
+
+          // 파일에 쓰기
+          fs.writeFile(filePath, updatedData, 'utf8', (writeErr) => {
+            if (writeErr) {
+              console.error('파일에 데이터를 쓰는 중 오류가 발생했습니다.', writeErr);
+              return;
+            }
+            console.log('중복된 문장이 제거되었습니다.');
+          });
+        });
+  }
+
+  startTimer() {
+    this.io.to(this.id).emit("startTimer");
+    this.interval = setInterval(() => {
+      if (this.timer > 0) {
+        this.timer -= 0.5;
+        this.io.to(this.id).emit("time-update", this.timer);
+        this.generateHint();
+        // console.log("timer now:", this.timer);
+      } else {
+        clearInterval(this.interval);
+        this.dictionarySetup();
+        this.endTurn();
+      }
+    }, 500);
+  }
+
+  /**
+   * Should be called when timer ends, when
+   * all the guesser guessed the word, or when
+   * the drawer disconnects
+   */
+  async endTurn() {
+    await this.sleep(1000);
+    clearInterval(this.interval); // Clear interval
+    this.io.to(this.id).emit("stopTimer");
+    let endGame = false;
+
+    //check if all the players already had a turn to draw
+    if (this.drawer_order.length === 0) {
+      //check for last round
+      console.log(`Round ${this.curr_round} of ${this.rounds}`);
+      if (this.curr_round >= this.rounds) {
+        console.log(`Ending game...`);
+        endGame = true;
+        this.playing = false;
+      } else {
+        this.curr_round += 1;
+        this.drawer_order = Array.from(this.connected_players.values());
+      }
+    }
+
+    // Clear canvas
+    this.strokes.length = 0; // Clear the canvas
+    this.io.to(this.id).emit("draw", { type: 1 }, this.strokes);
+
+    if (!endGame) {
+      this.newTurn();
+      this.notifier(); // Let all the players know that turn ended
+    } else {
+      this.state = constants.GAME_ENDED;
+      this.round_state = 3;
+      try {
+        const res = db.collection("Lobbies").doc(this.id).update({
+          state: constants.GAME_ENDED,
+        });
+        setTimeout(() => {
+          this.io.to(this.id).emit("state-change", constants.GAME_ENDED);
+        }, 1000);
+        //this.io.to(this.id).emit("state-change", constants.GAME_ENDED);
+      } catch (error) {
+        //TODO: Handle properly
+        console.log("Cannot update lobby state in db ");
+      }
+
+      try {
+        // Create new new Game document
+        const game = await db.collection("Games").add({
+          date: new Date(),
+          rounds: this.rounds,
+        });
+
+        console.log(`New game id ${game.id}`);
+
+        const game_col = db
+          .collection("Games")
+          .doc(game.id)
+          .collection("Scores");
+
+        const users = db.collection("Users");
+
+        const batch = db.batch();
+
+        const players = Array.from(this.players.values());
+        players.forEach((player) => {
+          const playerRef = game_col.doc(player.id);
+          batch.set(playerRef, { name: player.name, score: player.score });
+
+          const gameRef = users.doc(player.id).collection("Games").doc(game.id);
+          batch.set(gameRef, { gameID: game.id });
+        });
+
+        const res = await batch.commit();
+        console.log("Successfully upload scores to db");
+      } catch (error) {
+        //TODO: Handle properly
+        console.log(`Something went wrong in uploading score... ${error}`);
+      }
+      for (const value of this.players.values()) {
+        value.score = 0;
+      }      
+    }
+  }
+
+  joinPlayer(player_info, socket_id) {
+    if (!this.players.has(player_info.id)) {
+      // Create new player record in players list
+      this.players.set(player_info.id, {
+        id: player_info.id,
+        name: player_info.name,
+        state: constants.CONNECTED,
+        profileKey: player_info.profileKey,
+        score: 0,
+      });
+    } else {
+      if (this.players.get(player_info.id).state !== constants.KICKED) {
+        this.players.get(player_info.id).state = constants.CONNECTED;
+      }
+    }
+    if (this.players.get(player_info.id).state !== constants.KICKED) {
+      this.connected_players.set(socket_id, player_info.id);
+
+      // Adding player to draw order when in game
+      if (this.state === constants.IN_GAME)
+        this.drawer_order.push(player_info.id);
+    }
+  }
+
+  /**
+   * connects player in db, unless player state is kicked
+   * @param {id: string, username: string} player_info
+   */
+  dbJoinPlayer(player_info) {
+    if (this.state === constants.IN_LOBBY) {
+      try {
+        db.collection("Lobbies")
+          .doc(this.id)
+          .collection("Players")
+          .doc(player_info.id)
+          .get()
+          .then((doc) => {
+            // NOTE: comment out if condition if we want to allow kicked players to reconnect
+            if (!doc.exists || doc.data().state !== constants.KICKED) {
+              doc.ref.set({
+                id: player_info.id,
+                name: player_info.name,
+                state: constants.CONNECTED,
+              });
+            } else {
+              throw Error("could not connect player");
+            }
+          })
+
+          .then(() => {
+            return constants.CONNECTED;
+          });
+      } catch (err) {
+        return err;
+      }
+    } else {
+      return constants.ERR;
+    }
+  }
+  kickPlayer(playerId) {
+    const playerSocketId = this.findSocketId(playerId);
+    const user_id = this.connected_players.get(playerSocketId);
+    this.players.get(user_id).state = constants.KICKED;
+    return playerSocketId;
+  }
+  leavePlayer(socket_id) {
+    const user_id = this.connected_players.get(socket_id);
+    if (this.players.get(user_id).state !== constants.KICKED)
+      this.players.get(user_id).state = constants.DISCONNECTED;
+    this.connected_players.delete(socket_id);
+
+    //TODO: If in game, and only 1 player -> black to lobby
+
+    if (this.state === constants.IN_GAME) {
+      this.drawer_order = this.drawer_order.filter(
+        (drawer) => drawer !== user_id
+      );
+      if (this.drawer === user_id) {
+        //TODO: Test on case were last person leaves or last drawer leaves
+        this.endTurn();
+      } else {
+        if (this.players_guessed.size === this.connected_players.size - 1) {
+          this.endTurn();
+        }
+      }
+    }
+
+    // Check if it is the last player
+    if (this.connected_players.size === 0) {
+      this.state = constants.GAME_DISCONNECTED;
+      return false;
+    }
+
+    // Handle the case when the user is the host
+    if (user_id == this.host.id) {
+      console.log("Changing host....");
+      this.hostChange();
+    }
+    return user_id;
+  }
+
+  /**G
+   * sets player state in db to disconnected
+   * @param {id: string, username: string} player_info
+   */
+  dbLeavePlayer(socket_id) {
+    let playerID = this.connected_players.get(socket_id);
+    let playerState = this.players.get(playerID).state;
+    console.log(this.players.get(playerID).state);
+    if (playerState !== constants.KICKED) {
+      console.log("getting to storing state");
+      try {
+        db.collection("Lobbies")
+          .doc(this.id)
+          .collection("Players")
+          .doc(playerID)
+          .update({
+            state: constants.DISCONNECTED,
+          })
+          .then(() => {
+            return constants.DISCONNECTED;
+          });
+      } catch (err) {
+        return err;
+      }
+    }
+  }
+
+  /**
+   * changes db game host to match this.host
+   * used by dbLeavePlayer
+   */
+  dbHostChange() {
+    let lobby = db.collection("Lobbies").doc(this.id).get();
+    if (this.host.id !== lobby.hostId) {
+      try {
+        db.collection("Lobbies")
+          .doc(this.id)
+          .set({
+            hostId: this.hostId,
+          })
+          .then(() => {
+            return hostId;
+          });
+      } catch (err) {
+        return err;
+      }
+    }
+  }
+
+  hostChange() {
+    const next_hostId = this.connected_players.values().next().value;
+    const next_host = this.players.get(next_hostId);
+    // console.log(`New host id: ${next_host}`);
+    this.host = {
+      id: next_host.id,
+      name: next_host.name,
+    };
+  }
+
+  dcLobby() {
+    this.state = constants.GAME_DISCONNECTED; // set the correct
+    // update db
+    db.collection("Lobbies")
+      .doc(this.id)
+      .update({
+        state: constants.GAME_DISCONNECTED,
+      })
+      .then((_) => {
+        return true;
+      })
+      .catch((err) => {
+        console.log(
+          `Cannot update lobby ${this.id} to GAME_DISCONNECTED with ${err}`
+        );
+        return false;
+      });
+    // return if true or false if db was updated successfully
+  }
+
+  getLobbyStatus() {
+    return {
+      state: this.state,
+      host: { id: this.host.id, name: this.host.name },
+      settings: {
+        rounds: this.rounds,
+        draw_time: this.drawing_time,
+        word_list: this.word_list,
+      },
+      players: Array.from(this.players.values()),
+    };
+  }
+
+  changeSetting(setting) {
+    this.rounds = setting.rounds;
+    this.drawing_time = setting.draw_time;
+  }
+
+  /**
+   * changes db game state to match this.state
+   */
+  dbChangeGameState() {
+    try {
+      db.collection("Lobbies").doc(this.id).set({
+        state: this.state,
+      });
+    } catch (err) {
+      return err;
+    }
+  }
+
+  /**
+   * sets player state in db to kicked
+   * @param {id: string} player_info
+   */
+  dbKickPlayer(player_info) {
+    try {
+      db.collection("Lobbies")
+        .doc(this.id)
+        .collection("Players")
+        .doc(player_info + "")
+        .update({
+          state: constants.KICKED,
+        })
+        .then(() => {
+          return constants.KICKED;
+        });
+    } catch (err) {
+      return err;
+    }
+  }
+
+  saveStroke(stroke) {
+    if (this.round_state === 1) {
+      if (stroke.type === 1) {
+        this.strokes.length = 0;
+      } else {
+        this.strokes.push(stroke);
+      }
+      return this.strokes;
+    } else {
+      return undefined;
+    }
+  }
+
+  // returns random int between min and max
+  rndInt(min, max) {
+    [min, max] = [Math.ceil(min), Math.floor(max)];
+    return min + Math.floor(Math.random() * (max - min + 1));
+  }
+
+  // returns array of 3 words from the list of words
+  getWordOptions() {
+    // removes last word from possible words to be chosen from
+    // will be added back
+    for (let i = 0; i < word_list.length; i++) {
+      if (word_list[i] === this.word) {
+        word_list.splice(i, 1);
+        break;
+      }
+    }
+
+    let wordOptions = [];
+    // gets 3 random words from list and add them to word options
+    for (let i = 0; i < 3; i++) {
+      let index = this.rndInt(0, word_list.length - 1);
+      wordOptions.push(word_list[index]);
+      word_list.splice(index, 1);
+    }
+
+    // add back wordOptions and word to word list
+    word_list.concat(wordOptions);
+    word_list.push(this.word);
+
+    return wordOptions;
+  }
+
+  // takes in array of words to add to wordlist
+  addToWords(newWords) {
+    console.log("adding new words");
+    let wordsToAdd = [];
+    for (let word in newWords) {
+      newWords[word] = newWords[word].trim().toLowerCase();
+      // handles empty inputs
+      if (newWords[word].length) {
+        wordsToAdd.push(newWords[word]);
+      }
+    }
+    word_list = [...new Set(word_list.concat(wordsToAdd))];
+  }
+
+  generateHint() {
+    const timeIntervals = Math.round(
+      this.drawing_time / (this.numberOfHints + 1)
+    );
+    if (this.timer === 0) {
+      // revieal full word when time runs out
+      this.hint = this.word.split("");
+      this.notifier();
+    } else if (this.numberOfHints && this.timer % timeIntervals === 0) {
+      let possible = [];
+      for (let i = 0; i < this.hint.length; i++) {
+        if (this.hint[i] === "_") {
+          possible.push(i);
+        }
+      }
+      const randomIndex = possible[this.rndInt(0, possible.length - 1)];
+
+      this.hint[parseInt(randomIndex)] = this.word.charAt(randomIndex);
+      this.notifier();
+    }
+  }
+
+  setHints(word) {
+    let emptyHint = [];
+    let numeberOfLetters = 0;
+    for (let letter of word) {
+      if (letter.match(/[a-z]/i)) {
+        emptyHint.push("_");
+        numeberOfLetters++;
+      } else {
+        emptyHint.push(letter);
+      }
+    }
+    this.hint = emptyHint;
+
+    this.numberOfHints = Math.round(numeberOfLetters * 0.25);
+  }
+
+  calculatePoints() {
+    return Math.round(
+      (1 - (1.0 * this.drawing_time - this.timer) / this.drawing_time) * 250
+    );
+  }
+
+    //function writing to dictionary
+    /*writeWordToDictionary(user_id) {
+      const filePath = 'C:\\Users\\kimsi\\OneDrive\\바탕 화면\\pictogrammer-master\\server\\src\\Game\\dictionary.json';
+    
+   // 새로운 데이터
+              const newData = {
+                sentence: user_id,
+                additionalInfo: this.word
+              };
+
+              // 기존 파일 데이터 읽기
+              fs.readFile(filePath, 'utf8', (err, data) => {
+                if (err) {
+                  console.error('파일을 읽는 중 오류가 발생했습니다.', err);
+                  return;
+                }
+
+                let jsonData = {};
+                try {
+                  // 기존 데이터 파싱
+                  jsonData = JSON.parse(data);
+                } catch (parseErr) {
+                  console.error('JSON 데이터를 파싱하는 중 오류가 발생했습니다.', parseErr);
+                  return;
+                }
+
+                // 새로운 데이터 추가
+                jsonData.newSentence = newData.sentence;
+                jsonData.moreInfo = newData.additionalInfo;
+
+                // 업데이트된 데이터를 JSON 문자열로 변환
+                const updatedData = JSON.stringify(jsonData, null, 2);
+
+                // 파일에 쓰기
+                fs.writeFile(filePath, updatedData, 'utf8', (writeErr) => {
+                  if (writeErr) {
+                    console.error('파일에 데이터를 쓰는 중 오류가 발생했습니다.', writeErr);
+                    return;
+                  }
+                  console.log('파일에 문장이 성공적으로 입력되었습니다.');
+                });
+              });
+
+    }*/
+
+
+    writeWordToDictionary(user_id) {
+      const filePath = 'C:\\Users\\kimsi\\OneDrive\\바탕 화면\\pictogrammer-master\\server\\src\\Game\\dictionary.txt';
+    
+      // 새로운 데이터
+      const newData = {
+        sentence: user_id,
+        additionalInfo: this.word
+      };
+    
+      //이미 단어가 단어장에 저장되어있는 경우//
+
+      // 새로운 데이터를 문자열로 변환
+      const newSentence = `${newData.sentence} - ${newData.additionalInfo},`;
+    
+      // 파일에 쓰기
+      fs.appendFile(filePath, newSentence, 'utf8', (err) => {
+        if (err) {
+          console.error('파일에 데이터를 추가하는 중 오류가 발생했습니다.', err);
+          return;
+        }
+        console.log('파일에 문장이 성공적으로 추가되었습니다.');
+      });
+    }
+
+
+  handleCorrectGuess(user_id) {
+    if (!this.players_guessed.has(user_id)) {
+      this.players.get(user_id).score += this.calculatePoints();
+      this.players_guessed.add(user_id);
+      this.players.get(this.drawer).score += Math.round(100/this.players.size);
+
+      if (this.players_guessed.size === this.connected_players.size - 1) {
+        this.dictionarySetup();
+        this.endTurn();
+      }
+    }
+  }
+
+  // this should maybe be refactored
+  checkGuess(user_id, guess) {
+    if (this.word === guess && this.drawer !== user_id) {
+      this.handleCorrectGuess(user_id);
+      return true;
+    }
+    else{
+    this.writeWordToDictionary(user_id);
+    return false;
+    }
+  }
+
+  sleep(milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+  }
+}
+
+
+
+module.exports = Lobby;
