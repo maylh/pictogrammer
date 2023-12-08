@@ -127,7 +127,7 @@ class Lobby {
             return;
           }
 
-          const lines = data.split(',');
+          const lines = data.split('\n');
           const uniqueLines = Array.from(new Set(lines)); // 중복 제거
 
           // 중복을 제거한 데이터를 다시 문자열로 변환
@@ -674,7 +674,7 @@ class Lobby {
       //이미 단어가 단어장에 저장되어있는 경우//
 
       // 새로운 데이터를 문자열로 변환
-      const newSentence = `${newData.sentence} - ${newData.additionalInfo},`;
+      const newSentence = `${newData.sentence} - ${newData.additionalInfo}\n`;
     
       // 파일에 쓰기
       fs.appendFile(filePath, newSentence, 'utf8', (err) => {
@@ -694,7 +694,7 @@ class Lobby {
       this.players.get(this.drawer).score += Math.round(100/this.players.size);
 
       if (this.players_guessed.size === this.connected_players.size - 1) {
-        this.dictionarySetup();
+        //this.dictionarySetup();
         this.endTurn();
       }
     }
@@ -703,11 +703,13 @@ class Lobby {
   // this should maybe be refactored
   checkGuess(user_id, guess) {
     if (this.word === guess && this.drawer !== user_id) {
+     
+      this.writeWordToDictionary(user_id);
       this.handleCorrectGuess(user_id);
+
       return true;
     }
     else{
-    this.writeWordToDictionary(user_id);
     return false;
     }
   }
