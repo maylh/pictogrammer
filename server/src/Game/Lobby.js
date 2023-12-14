@@ -5,6 +5,7 @@ let word_list = require("./word-list");
 const fs = require('fs');
 let jsonData={};
 
+
 class Lobby {
   constructor(id, host) {
     this.id = id;
@@ -199,6 +200,12 @@ class Lobby {
    * all the guesser guessed the word, or when
    * the drawer disconnects
    */
+  
+
+
+
+
+  
   async endTurn() {
     await this.sleep(1000);
     clearInterval(this.interval); // Clear interval
@@ -218,6 +225,36 @@ class Lobby {
         this.drawer_order = Array.from(this.connected_players.values());
       }
     }
+
+
+    async function getDictionaryData() {
+      try {
+        const snapshot = await db.collection('dictionary').get();
+        const dictionaryData = [];
+        snapshot.forEach((doc) => {
+          const { id, words } = doc.data(); // Firestore 문서에서 id와 words 필드를 가져옴
+          dictionaryData.push({ id, words });
+        });
+
+        return dictionaryData;
+      } catch (error) {
+        console.error('Error getting documents:', error);
+        throw new Error('Failed to get dictionary data.');
+      }
+    }
+    
+    // getDictionaryData 함수를 호출하여 Firestore에서 데이터 가져오기
+    getDictionaryData()
+      .then((data) => {
+        console.log('Dictionary data:', data);
+        // 여기에서 가져온 데이터를 원하는 대로 처리할 수 있습니다.
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        // 에러 발생 시 처리
+      });
+
+
 
     // Clear canvas
     this.strokes.length = 0; // Clear the canvas
@@ -281,6 +318,13 @@ class Lobby {
     }
   }
 
+
+
+
+
+
+
+  
   joinPlayer(player_info, socket_id) {
     if (!this.players.has(player_info.id)) {
       // Create new player record in players list

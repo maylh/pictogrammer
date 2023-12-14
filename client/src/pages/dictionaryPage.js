@@ -1,109 +1,138 @@
 import React from "react";
-import Accordion from "react-bootstrap/Accordion";
-import Card from "react-bootstrap/Card";
-import Table from "react-bootstrap/Table";
-import Button from "react-bootstrap/Button";
 import AuthContext from "../context/AuthContext";
 import NavBar from "../components/NavBar";
-import "../styles/Dictionary.css";
+import "../styles/MatchHistoryPage.css";
 
-class dictionaryPage extends React.Component {
+class MatchHistoryPage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      errorMessage: "",
-      dictionary: {},
-      userId: this.props.authCreds.auth.user.id, // 사용자 ID를 가져옵니다.
+      errorMessage: "", // 오류 메시지 저장
+      gameHistory: [], // 게임 히스토리 저장
+      dictionaryContent: "", // 'dictionary.txt' 파일 내용 저장
     };
+    this.getLobbies = this.getLobbies.bind(this);
+    this.getUserPlacementString = this.getUserPlacementString.bind(this);
+    this.getUserScore = this.getUserScore.bind(this);
     this.loadDictionary = this.loadDictionary.bind(this);
-    this.getUserWords = this.getUserWords.bind(this);
   }
-
 
   componentDidMount() {
-    this.loadDictionary();
+    this.getLobbies(); // 게임 히스토리 가져오기
+    this.loadDictionary(); // 'dictionary.txt' 파일 내용 가져오기
   }
 
-  loadDictionary() {
-    fetch("C:\\Users\\kimsi\\OneDrive\\바탕 화면\\pictogrammer-master\\server\\src\\Game\\dictionary.txt")
+  getLobbies() {
+    fetch(
+      `http://localhost:8888/profile/matches?userID=${this.props.authCreds.auth.user.id}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    )
       .then((response) => {
-        if (response.status === 200) {
-          return response.text();
-        } else {
-          return Promise.reject(new Error(`Failed to load dictionary. Response status code: ${response.status}`));
-        }
+        if (response.status === 200) return response.json();
+        throw new Error("failed get match history");
       })
-      .then((data) => {
-        const dictionary = {};
-        const lines = data.split("\n"); // 각 줄을 분리합니다.
-        for (const line of lines) {
-          const [userId, word] = line.split(" - "); // userId와 단어를 분리합니다.
-          if (!dictionary[userId]) {
-            dictionary[userId] = []; // 사용자 ID에 해당하는 배열을 생성합니다.
-          }
-          dictionary[userId].push(word); // 해당 배열에 단어를 추가합니다.
-        }
-  
-        this.setState({ dictionary }); // dictionary 상태를 업데이트합니다.
+      .then((responseJson) => {
+        this.setState({
+          gameHistory: responseJson.gameHistory,
+        });
       })
       .catch((error) => {
-        console.error(error);
-        this.setState({ errorMessage: "Failed to load dictionary." }); // 에러 메시지를 설정합니다.
+        console.log(error);
+        this.setState({
+          errorMessage: "Something went wrong getting match history.",
+        });
       });
   }
 
-  getUserWords() {
-    const userWords = this.state.dictionary[this.state.userId]; // 사용자 단어 목록을 가져옵니다.
-    if (!userWords) {
-      return []; // 사용자 단어가 없으면 빈 배열을 반환합니다.
-    }
-    return userWords.map((word) => ( // 사용자 단어 목록을 JSX로 변환합니다.
-      <li key={word}>{word}</li>
-    ));
+  loadDictionary() {
+    // 'dictionary.txt' 파일 가져오는 함수
+    fetch("C:\\Users\\kimsi\\OneDrive\\바탕 화면\\pictogrammer-master\\server\\src\\Game\\dictionary.txt") // 파일 가져오기
+      .then((response) => {
+        if (response.status === 200) {
+          return response.text(); // 텍스트 형식으로 변환
+        } else {
+          throw new Error("Failed to load dictionary."); // 실패 시 에러 처리
+        }
+      })
+      .then((data) => {
+        this.setState({ dictionaryContent: data }, this.forceUpdate);
+      })
+      .catch((error) => {
+        console.error(error);
+        this.setState({ errorMessage: "Failed to load dictionary." }); // 에러 메시지 저장
+      });
+  }
+
+  /*
+
+  loadDictionary() {
+  fetch("") // 서버 측 엔드포인트 호출주소를 입력해야함
+    .then((response) => {
+      if (response.status === 200) {
+        return response.json();
+      } else {
+        throw new Error("Failed to load dictionary.");
+      }
+    })
+    .then((data) => {
+      // 서버에서 받은 데이터를 state에 설정
+      this.setState({ dictionaryContent: JSON.stringify(data) }, this.forceUpdate);
+    })
+    .catch((error) => {
+      console.error(error);
+      this.setState({ errorMessage: "Failed to load dictionary." });
+    });
+}
+
+  */
+
+
+  getUserPlacementString(match, username) {
+    let placement = match.scores.findIndex((obj) => obj.name === username) + 1;
+    return "#" + placement;
+  }
+
+  getUserScore(match, username) {
+    return match.scores.find((obj) => obj.name === username).score;
   }
 
   render() {
-    const userWords = this.getUserWords(); // 사용자 단어 목록을 가져옵니다.
-
-    if (this.state.errorMessage !== "") { // 에러 메시지가 있으면 에러 메시지를 표시합니다.
+    const { dictionaryContent, errorMessage } = this.state;
+  
+    if (errorMessage !== "") {
       return (
         <div className="page">
-          <NavBar showCreateGame={false} showHome={true}></NavBar>
-          <h2>{this.state.errorMessage}</h2>
+          <div className="match-history-content">
+            <NavBar showCreateGame={false} showHome={true}></NavBar>
+            <h2>{errorMessage}</h2>
+          </div>
         </div>
       );
     }
-
+  
+    if (!dictionaryContent) {
+      return <div className="page"><h2>Loading dictionary...</h2></div>;
+    }
+  
     return (
       <div className="page">
-        <NavBar showCreateGame={false} showHome={true}></NavBar>
-        <div className="dictionary-content">
-          <h2>Your Words</h2>
-          <ul>
-            {userWords.map((word) => (
-              <li key={word}>
-                <div className="word-container">
-                  <div className="word">
-                    {word}
-                  </div>
-                  <div className="deletion-button">
-                    <Button variant="danger" onClick={() => this.deleteWord(word)}>삭제</Button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+        <div className="match-history-content">
+          <NavBar showCreateGame={false} showHome={true}></NavBar>
+          <div className="dictionary-content">
+            <h2>Dictionary Contents:</h2>
+            <pre>{dictionaryContent}</pre>
+          </div>
         </div>
       </div>
     );
   }
-
-  deleteWord(word) {
-    const newDictionary = this.state.dictionary;
-    const userId = this.state.userId;
-    newDictionary[userId].splice(newDictionary[userId].indexOf(word), 1);
-    this.setState({ dictionary: newDictionary });
-  }
 }
 
-export default AuthContext(dictionaryPage);
+export default AuthContext(MatchHistoryPage);
