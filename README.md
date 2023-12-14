@@ -25,3 +25,9 @@ Exit
 ctrl+c
 '''
 
+It should be running in `http://localhost:8000`
+
+```
+cd model
+uvicorn main:app --reload
+```
