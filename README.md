@@ -25,9 +25,20 @@ Exit
 ctrl+c
 '''
 
+#Model API server
+```
+pip install fastapi
+pip install uvicorn
+```
+
 It should be running in `http://localhost:8000`
 
 ```
 cd model
 uvicorn main:app --reload
 ```
+
+Exit
+'''
+ctrl+c
+'''
