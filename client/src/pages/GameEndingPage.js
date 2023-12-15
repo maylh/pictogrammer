@@ -5,7 +5,19 @@ import "../styles/EndOfGamePage.css";
 import { withRouter } from "react-router-dom";
 import constants from "../Utils/Constants";
 
+import image1 from "../images/profileImg/1.png";
+import image2 from "../images/profileImg/2.png";
+import image3 from "../images/profileImg/3.png";
+import image4 from "../images/profileImg/4.png";
+import image5 from "../images/profileImg/5.png";
+import image6 from "../images/profileImg/6.png";
+
 class GameEndingPage extends React.Component {
+
+  // 이미지 배열 정의
+  images = [image1, image2, image3, image4, image5, image6];
+
+  
   constructor(props) {
     super(props);
     this.state = {
@@ -34,11 +46,8 @@ class GameEndingPage extends React.Component {
         <Card key={i} id={i} className="player" style={{ width: "6rem" }}>
           <Card.Img
             variant="top"
-            src={
-              arr[i].profileKey && (arr[i].profileKey > 0 && arr[i].profileKey <= 10)
-                ? `https://pokeres.bastionbot.org/images/pokemon/${arr[i].profileKey}.png`
-                : "https://play.nintendo.com/images/profile-kirby-kirby.7bf2a8f2.aead314d58b63e27.png"
-            }
+            src={this.images[arr[i].profileKey - 1]}
+            alt="no image"
           />
           <Card.Body className="playerGameInfo" style={{ padding: "0px" }}>
             <Card.Title className="playerName">{arr[i].name}</Card.Title>

@@ -15,7 +15,19 @@ import BanPage from "./BanPage";
 import AuthContext from "../context/AuthContext";
 import { withDeviceDetect } from "../Utils/DeviceDetect";
 
+import image1 from "../images/profileImg/1.png";
+import image2 from "../images/profileImg/2.png";
+import image3 from "../images/profileImg/3.png";
+import image4 from "../images/profileImg/4.png";
+import image5 from "../images/profileImg/5.png";
+import image6 from "../images/profileImg/6.png";
+
+
 class HomePage extends React.Component {
+
+  // 이미지 배열 정의
+  images = [image1, image2, image3, image4, image5, image6];
+
   constructor(props) {
     super(props);
     this.state = {
@@ -161,12 +173,7 @@ class HomePage extends React.Component {
             <h3>{user.name || "kirby placeholder"}</h3>
             <img
               className="profile-picture"
-              src={
-                user.profileKey &&
-                (user.profileKey > 0 && user.profileKey <= 10)
-                  ? `https://pokeres.bastionbot.org/images/pokemon/${user.profileKey}.png`
-                  : "https://play.nintendo.com/images/profile-kirby-kirby.7bf2a8f2.aead314d58b63e27.png"
-              }
+              src={this.images[user.profileKey - 1]}
               alt="pfp"
             ></img>
     

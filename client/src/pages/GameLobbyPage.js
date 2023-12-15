@@ -6,8 +6,20 @@ import constants from "../Utils/Constants";
 import Modal from "react-bootstrap/Modal";
 import { withRouter, Link, Redirect } from "react-router-dom";
 
+import image1 from "../images/profileImg/1.png";
+import image2 from "../images/profileImg/2.png";
+import image3 from "../images/profileImg/3.png";
+import image4 from "../images/profileImg/4.png";
+import image5 from "../images/profileImg/5.png";
+import image6 from "../images/profileImg/6.png";
+
 //takes in prop isHost: bool
 class GameLobbyPage extends React.Component {
+
+  // 이미지 배열 정의
+  images = [image1, image2, image3, image4, image5, image6];
+
+
   constructor(props) {
     super(props);
     this.state = {
@@ -247,13 +259,7 @@ class GameLobbyPage extends React.Component {
 
                     <img
                       className="player-pfp"
-                      src={
-                        player.profileKey &&
-                        player.profileKey > 0 &&
-                        player.profileKey <= 10
-                          ? `https://pokeres.bastionbot.org/images/pokemon/${player.profileKey}.png`
-                          : "https://play.nintendo.com/images/profile-kirby-kirby.7bf2a8f2.aead314d58b63e27.png"
-                      }
+                      src={this.images[player.profileKey - 1]}
                       alt="pfp"
                     ></img>
                     <div>{player.name}</div>
