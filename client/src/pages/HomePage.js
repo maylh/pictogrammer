@@ -40,6 +40,7 @@ class HomePage extends React.Component {
   }
 
   handleAImodePageClicked(){
+    console.log("handleAImodePageClicked called");
     const user = this.props.authCreds.auth.user;
     fetch(
       `http://localhost:8888/lobby/create?hostId=${user.id}&hostName=${user.name}`,
@@ -68,9 +69,12 @@ class HomePage extends React.Component {
       .catch((error) => {
         console.log(error);
       });
+
+      console.log("handleAImodePageClicked called done");
   }
 
   handleCreateGameClicked() {
+    console.log("handleCreateGameClicked called");
     const user = this.props.authCreds.auth.user;
     fetch(
       `http://localhost:8888/lobby/create?hostId=${user.id}&hostName=${user.name}`,
@@ -181,7 +185,7 @@ class HomePage extends React.Component {
               <FormControl
               
                 disabled={this.props.mobile}
-                placeholder="Enter lobby code to join a game"
+                placeholder="Enter room code to join a game !"
                 value={this.state.gameCode}
                 onChange={this.handleGameCodeChange}
                 aria-label="Lobby Code"
@@ -211,33 +215,7 @@ class HomePage extends React.Component {
               </Popover>
             </Overlay> 
             
-            <Accordion defaultActiveKey="0" className="info"> 
-              <Card>
-                <Card.Header>
-                  <Accordion.Toggle as={Button} variant="link" eventKey="0">
-                    How to Play good~
-                  </Accordion.Toggle>
-                </Card.Header>
-                <Accordion.Collapse eventKey="0">
-                  <Card.Body>
-                    Create a game lobby and invite your friends to play or join
-                    an existing lobby above. Adjust the settings to your liking
-                    then start the game. When it's your turn to draw, choose one
-                    of the three words and visualize it before the time runs
-                    out. The more people that get the word right, the more
-                    points you win! When somebody else is drawing, type your
-                    guess into the chat to gain points. Be quick, the earlier
-                    you guess a word the more points you get! <br />
-                    <u>Tip:</u> hints will appear above the canvas as time
-                    passes. <br />
-                    <u>Note:</u> if you a player is making you feel
-                    uncomfortable at anytime, click their card on the left to
-                    report them
-                  </Card.Body>
-                </Accordion.Collapse>
-              </Card>
-            </Accordion>
-            
+  
           </div>
         </div>
       );

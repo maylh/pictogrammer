@@ -3,12 +3,19 @@
   margin: 0;
   box-sizing: border-box;
 }
+
 .container {
-  height: 80vh;
+  height: 100vh;
+  width: 100vh;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   justify-content: center;
+  /*배경 이미지 setting
+  background-image: url('../images/background.png'); 
+  background-color: blue;
+  background-size: cover;
+  background-position: center; */
 }
 .internal-container {
   margin: auto;

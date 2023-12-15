@@ -5,6 +5,7 @@ import { Redirect } from "react-router-dom";
 import AuthContext, { useAuth } from "../context/AuthContext";
 import "../styles/loginPage.css";
 import logo from "../images/logo.png";
+import drawImage from "../images/draw.png";
 class LoginPage extends Component {
   constructor(props) {
     super(props);
@@ -18,6 +19,7 @@ class LoginPage extends Component {
           <div className="container">
             <div className="internal-container">
               <img src={logo} className="logo"></img>
+              <img src={drawImage}></img>
               <Button
                 className="login-button"
                 onClick={() =>
