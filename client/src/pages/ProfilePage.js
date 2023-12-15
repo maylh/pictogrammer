@@ -21,7 +21,7 @@ class ProfilePage extends React.Component {
     super(props);
     this.state = {
       userUsername: this.props.authCreds.auth.user.name,
-      userImageIndex: this.props.authCreds.auth.user.profileKey || 1,
+      userImageIndex: this.props.authCreds.auth.user.profileKey,
       modalShow: false,
     };
 
@@ -107,7 +107,7 @@ class ProfilePage extends React.Component {
               <div className="picture">
                 <img
                   className="profile-picture"
-                  src={selectedImage}
+                  src={selectedImage || DefaultProfile}
                   alt="no image"
                 ></img>
                 <Button

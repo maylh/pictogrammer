@@ -15,6 +15,7 @@ import BanPage from "./BanPage";
 import AuthContext from "../context/AuthContext";
 import { withDeviceDetect } from "../Utils/DeviceDetect";
 
+import DefaultProfile from "../images/blank_profile.png";
 import image1 from "../images/profileImg/1.png";
 import image2 from "../images/profileImg/2.png";
 import image3 from "../images/profileImg/3.png";
@@ -170,11 +171,11 @@ class HomePage extends React.Component {
       return (
         <div className="page">
           <div className="homepage-content">
-            <h3>{user.name || "kirby placeholder"}</h3>
+            <h3>Hello, {user.name || "kirby placeholder"} ! </h3>
             <img
               className="profile-picture"
-              src={this.images[user.profileKey - 1]}
-              alt="pfp"
+              src={user.profileKey ? this.images[user.profileKey - 1] : DefaultProfile}
+              alt="no image"
             ></img>
     
             <NavBar

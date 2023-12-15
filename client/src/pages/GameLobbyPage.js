@@ -6,6 +6,7 @@ import constants from "../Utils/Constants";
 import Modal from "react-bootstrap/Modal";
 import { withRouter, Link, Redirect } from "react-router-dom";
 
+import DefaultProfile from "../images/blank_profile.png";
 import image1 from "../images/profileImg/1.png";
 import image2 from "../images/profileImg/2.png";
 import image3 from "../images/profileImg/3.png";
@@ -259,7 +260,7 @@ class GameLobbyPage extends React.Component {
 
                     <img
                       className="player-pfp"
-                      src={this.images[player.profileKey - 1]}
+                      src={this.images[player.profileKey - 1] || DefaultProfile}
                       alt="pfp"
                     ></img>
                     <div>{player.name}</div>

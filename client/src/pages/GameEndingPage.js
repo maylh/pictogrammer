@@ -5,6 +5,7 @@ import "../styles/EndOfGamePage.css";
 import { withRouter } from "react-router-dom";
 import constants from "../Utils/Constants";
 
+import DefaultProfile from "../images/blank_profile.png";
 import image1 from "../images/profileImg/1.png";
 import image2 from "../images/profileImg/2.png";
 import image3 from "../images/profileImg/3.png";
@@ -46,7 +47,7 @@ class GameEndingPage extends React.Component {
         <Card key={i} id={i} className="player" style={{ width: "6rem" }}>
           <Card.Img
             variant="top"
-            src={this.images[arr[i].profileKey - 1]}
+            src={this.images[arr[i].profileKey - 1] || DefaultProfile}
             alt="no image"
           />
           <Card.Body className="playerGameInfo" style={{ padding: "0px" }}>
