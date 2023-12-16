@@ -30,6 +30,8 @@
 .profile-picture {
   Width: 10%;
   margin: 20px auto;
+  margin-top : 35px;
+  margin-bottom: 50px;
 }
 
 .homepage-content .card-header.collapsed {

@@ -259,9 +259,9 @@ class GameLobbyPage extends React.Component {
                     )}
 
                     <img
-                      className="player-pfp"
+                      className="player-profile-image"
                       src={this.images[player.profileKey - 1] || DefaultProfile}
-                      alt="pfp"
+                      alt="no iamge"
                     ></img>
                     <div>{player.name}</div>
                   </div>

@@ -64,6 +64,13 @@
   border-style: none !important;
 }
 
+.player-profile-image-ending {
+  width: 80px;
+  margin: auto;
+  margin-top : 15px;
+  margin-bottom: 15px;
+}
+
 .card-body {
   padding: 0;
 }

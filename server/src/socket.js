@@ -110,9 +110,9 @@ module.exports = function (Manager, io) {
         } else if (result.correctGuess) {
           socket
             .to(lobby_id)
-            .emit("chat", "Inky", `${result.name} guessed correctly`);
+            .emit("chat", "System", `${result.name} guessed correctly`);
           socket.emit("chat", result.name, msg);
-          socket.emit("chat", "Inky", `You guessed correctly`);
+          socket.emit("chat", "System", `You guessed correctly`);
           io.in(lobby_id).emit("score", Manager.getScore(lobby_id, socket.id));
           io.in(lobby_id).emit("score", Manager.getDrawerScore(lobby_id));
         } else {

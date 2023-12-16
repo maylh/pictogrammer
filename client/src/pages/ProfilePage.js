@@ -119,7 +119,7 @@ class ProfilePage extends React.Component {
                 </Button>
               </div>
               <div className="name">
-                <p className="nameTitle">Display Name: </p>
+                <p className="nameTitle">Name :</p>
                 <input
                   className="nameInput"
                   type="text"

@@ -72,7 +72,7 @@ class ChatBox extends Component {
               type="input"
               onChange={this.handleChange}
               value={this.state.currentMessage}
-              placeholder="type your guess here"
+              placeholder="Type your guess ..."
             ></Form.Control>
           </Form>
         </Card.Footer>

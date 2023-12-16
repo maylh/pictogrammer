@@ -1,7 +1,7 @@
 import React from "react";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
-import "../styles/EndOfGamePage.css";
+import "../styles/GameEndingPage.css";
 import { withRouter } from "react-router-dom";
 import constants from "../Utils/Constants";
 
@@ -46,6 +46,7 @@ class GameEndingPage extends React.Component {
       displayarray.push(
         <Card key={i} id={i} className="player" style={{ width: "6rem" }}>
           <Card.Img
+            className="player-profile-image-ending"
             variant="top"
             src={this.images[arr[i].profileKey - 1] || DefaultProfile}
             alt="no image"
