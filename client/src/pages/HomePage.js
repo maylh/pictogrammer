@@ -171,22 +171,32 @@ class HomePage extends React.Component {
       return (
         <div className="page">
           <div className="homepage-content">
-            <h3>Hello, {user.name || "kirby placeholder"} ! </h3>
+
+            <NavBar
+            ></NavBar>
+
+            <h3 style={{ marginTop: "40px" }}>Hello, {user.name || "kirby placeholder"} ! </h3>
+
             <img
               className="profile-picture"
               src={user.profileKey ? this.images[user.profileKey - 1] : DefaultProfile}
               alt="no image"
             ></img>
+
     
-            <NavBar
-              showCreateGame={!this.props.mobile}
-              createGameClick={this.handleCreateGameClicked}
+            {/* "Create Game" 버튼 */}
+            {!this.props.mobile && (
+              <Button variant="info" onClick={this.handleCreateGameClicked} className="createGamebutton">
+                Create Game
+              </Button>
+            )}
 
-              showWithAI={!this.props.mobile}
-              withAI={this.handleAImodePageClicked}
-            ></NavBar>
-
-            
+            {/* "With AI" 버튼 */}
+            {!this.props.mobile && (
+              <Button variant="info" onClick={this.handleAImodePageClicked} className="withAIbutton">
+                With AI
+              </Button>
+            )}
 
             
             <InputGroup style={{ maxWidth: "70%", margin: "10px auto" }}>

@@ -83,13 +83,18 @@
 }
 
 .pickIcon {
+  margin-top : 20px;
+  margin-bottom: 30px;
   width: 100%;
 }
+
 .savebutton {
   width: 80%;
+  margin-top: 40px;
 }
-.pokemonImg {
-  width: 80px;
-  height: 80px;
-  cursor: pointer;
+
+.profile-picture-profile-page {
+  Width: 80%;
+  margin: auto;
+  margin-bottom: 50px;
 }

@@ -26,6 +26,19 @@
   justify-content: space-around;
 }
 
+.createGamebutton {
+  width: 20%;
+  margin : auto;
+  margin-top: 10px;
+}
+
+.withAIbutton {
+  width: 20%;
+  margin : auto;
+  margin-top: 10px;
+  margin-bottom : 25px;
+}
+
 
 .profile-picture {
   Width: 10%;

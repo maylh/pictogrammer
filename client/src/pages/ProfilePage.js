@@ -101,12 +101,12 @@ class ProfilePage extends React.Component {
     return (
       <div className="page">
         <div className="content">
-          <NavBar className="nav" showCreateGame={false} showHome={true}></NavBar>
+          <NavBar className="nav" showHome={true}></NavBar>
           <div className="profilecontainer">
             <div className="profile">
               <div className="picture">
                 <img
-                  className="profile-picture"
+                  className="profile-picture-profile-page"
                   src={selectedImage || DefaultProfile}
                   alt="no image"
                 ></img>
