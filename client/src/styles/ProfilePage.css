@@ -58,6 +58,7 @@
 }
 .nameInput {
   width: 70%;
+  margin-right: 70px;
 }
 .profile-picture {
   width: 150px;
@@ -82,13 +83,18 @@
 }
 
 .pickIcon {
+  margin-top : 20px;
+  margin-bottom: 30px;
   width: 100%;
 }
+
 .savebutton {
   width: 80%;
+  margin-top: 40px;
 }
-.pokemonImg {
-  width: 100px;
-  height: 100px;
-  cursor: pointer;
+
+.profile-picture-profile-page {
+  Width: 80%;
+  margin: auto;
+  margin-bottom: 50px;
 }

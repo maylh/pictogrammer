@@ -1,13 +1,13 @@
-// settings랑 player 있는 페이지
+// AImodePage.js
 import React from "react";
-import "../styles/GameLobbyPage.css";
+import "../styles/AImodePage.css";
 import { Form, InputGroup, Col, Button } from "react-bootstrap";
 import constants from "../Utils/Constants";
 import Modal from "react-bootstrap/Modal";
 import { withRouter, Link, Redirect } from "react-router-dom";
 
 //takes in prop isHost: bool
-class GameLobbyPage extends React.Component {
+class AImodePage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -16,31 +16,12 @@ class GameLobbyPage extends React.Component {
       customWords: "", //TODO: Need handle this in the backend
       roomLink: this.props.match.params.lobbyID,
       numRoundsOptions: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-      drawingTimeOptions: [
-        5,
-        30,
-        45,
-        60,
-        75,
-        90,
-        100,
-        115,
-        130,
-        145,
-        160,
-        175,
-        190,
-        200,
-        215,
-        230,
-      ],
-      roomLinkValue: "hover to see lobby link",
+      drawingTimeOptions: [10, 20, 30, 40, 50, 60],
+
       modalShow: false,
     };
     this.handleNumRoundsChange = this.handleNumRoundsChange.bind(this);
     this.handleDrawingTimeChange = this.handleDrawingTimeChange.bind(this);
-    this.handleCustomWordChange = this.handleCustomWordChange.bind(this);
-    this.handleCopyClicked = this.handleCopyClicked.bind(this);
     this.startGame = this.startGame.bind(this);
     this.kickPlayerClicked = this.kickPlayerClicked.bind(this);
     this.kick = this.kick.bind(this);
@@ -93,17 +74,6 @@ class GameLobbyPage extends React.Component {
     });
   }
 
-  handleCustomWordChange(e) {
-    this.setState({
-      customWords: e.target.value,
-    });
-  }
-
-  handleCopyClicked() {
-    // not supported on all broswers
-    navigator.clipboard.writeText(this.state.roomLink);
-  }
-
   startGame() {
     const { match } = this.props;
     if (this.state.customWords.length) {
@@ -143,7 +113,7 @@ class GameLobbyPage extends React.Component {
         <div className="game-lobby-content">
           <div className="settings">
             <h3 style={{ textAlign: "center", paddingBottom: "1em" }}>
-              Settings
+              Settings AI
             </h3>
             <Form className="settings-form">
               <Form.Group as={Form.Row}>
@@ -181,41 +151,6 @@ class GameLobbyPage extends React.Component {
                   </InputGroup>
                 </Col>
               </Form.Group>
-              <Form.Group as={Form.Row}>
-                <Form.Label column sm={5}>
-                  Customs Words
-                </Form.Label>
-                <Form.Control
-                  as="textarea"
-                  disabled={!this.props.isHost}
-                  readOnly={!this.props.isHost}
-                  placeholder="Leave blank to only use default words. Separate words with commas."
-                  value={this.state.customWords}
-                  onChange={this.handleCustomWordChange}
-                />
-              </Form.Group>
-              <InputGroup
-                onMouseOver={() => {
-                  this.setState({ roomLinkValue: this.state.roomLink });
-                }}
-                onMouseOut={() => {
-                  this.setState({ roomLinkValue: "hover to see lobby link" });
-                }}
-              >
-                <Form.Control
-                  disabled
-                  readOnly
-                  value={this.state.roomLinkValue}
-                  ref={(el) => {
-                    this.roomLinkText = el;
-                  }}
-                />
-                <InputGroup.Append>
-                  <Button dvariant="info" onClick={this.handleCopyClicked}>
-                    Copy
-                  </Button>
-                </InputGroup.Append>
-              </InputGroup>
             </Form>
             <div className="button-group">
               <Link to="/" className="leave-lobby-btn">
@@ -295,7 +230,4 @@ class GameLobbyPage extends React.Component {
   }
 }
 
-export default withRouter(GameLobbyPage);
-
-
-
+export default withRouter(AImodePage);

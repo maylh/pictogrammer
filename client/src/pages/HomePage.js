@@ -15,7 +15,20 @@ import BanPage from "./BanPage";
 import AuthContext from "../context/AuthContext";
 import { withDeviceDetect } from "../Utils/DeviceDetect";
 
+import DefaultProfile from "../images/blank_profile.png";
+import image1 from "../images/profileImg/1.png";
+import image2 from "../images/profileImg/2.png";
+import image3 from "../images/profileImg/3.png";
+import image4 from "../images/profileImg/4.png";
+import image5 from "../images/profileImg/5.png";
+import image6 from "../images/profileImg/6.png";
+
+
 class HomePage extends React.Component {
+
+  // 이미지 배열 정의
+  images = [image1, image2, image3, image4, image5, image6];
+
   constructor(props) {
     super(props);
     this.state = {
@@ -26,6 +39,7 @@ class HomePage extends React.Component {
     this.handleGameCodeChange = this.handleGameCodeChange.bind(this);
     this.handleJoinGameClicked = this.handleJoinGameClicked.bind(this);
     this.handleCreateGameClicked = this.handleCreateGameClicked.bind(this);
+    this.handleAImodePageClicked = this.handleAImodePageClicked.bind(this);
   }
 
   componentDidMount() {}
@@ -39,6 +53,7 @@ class HomePage extends React.Component {
   }
 
   handleAImodePageClicked(){
+    console.log("handleAImodePageClicked called");
     const user = this.props.authCreds.auth.user;
     fetch(
       `http://localhost:8888/lobby/create?hostId=${user.id}&hostName=${user.name}`,
@@ -67,9 +82,12 @@ class HomePage extends React.Component {
       .catch((error) => {
         console.log(error);
       });
+
+      console.log("handleAImodePageClicked called done");
   }
 
   handleCreateGameClicked() {
+    console.log("handleCreateGameClicked called");
     const user = this.props.authCreds.auth.user;
     fetch(
       `http://localhost:8888/lobby/create?hostId=${user.id}&hostName=${user.name}`,
@@ -101,18 +119,19 @@ class HomePage extends React.Component {
   }
 
   handleJoinGameClicked() {
-    const user = this.props.authCreds.auth.user;
+    const user = this.props.authCreds.auth.user;  // 현재 사용자 정보 가져오기
     if (this.state.gameCode === "") return;
+    // 서버에 요청
     fetch(`http://localhost:8888/lobby/join2`, {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id: this.state.gameCode, userID: user.id }),
+      body: JSON.stringify({ id: this.state.gameCode, userID: user.id }), // 쿼리 매개변수로 현재 사용자의 ID와 이름이 전달
     })
-      .then((res) => {
-        if (res.status === 200) return res.json();
+      .then((res) => {  // 응답 처리
+        if (res.status === 200) return res.json();  // 200이면 (클라이언트 요청이 성공적으로 처리되었으면)
         throw new Error("failed fetching room info");
       })
       .then((res_json) => {
@@ -152,29 +171,39 @@ class HomePage extends React.Component {
       return (
         <div className="page">
           <div className="homepage-content">
-            <h3>{user.name || "kirby placeholder"}</h3>
+
+            <NavBar
+            ></NavBar>
+
+            <h3 style={{ marginTop: "40px" }}>Hello, {user.name || "kirby placeholder"} ! </h3>
+
             <img
               className="profile-picture"
-              src={
-                user.profileKey &&
-                (user.profileKey > 0 && user.profileKey <= 10)
-                  ? `https://pokeres.bastionbot.org/images/pokemon/${user.profileKey}.png`
-                  : "https://play.nintendo.com/images/profile-kirby-kirby.7bf2a8f2.aead314d58b63e27.png"
-              }
-              alt="pfp"
+              src={user.profileKey ? this.images[user.profileKey - 1] : DefaultProfile}
+              alt="no image"
             ></img>
+
     
-            <NavBar
-              showCreateGame={!this.props.mobile}
-              createGameClick={this.handleCreateGameClicked}
-            ></NavBar>
+            {/* "Create Game" 버튼 */}
+            {!this.props.mobile && (
+              <Button variant="info" onClick={this.handleCreateGameClicked} className="createGamebutton">
+                Create Game
+              </Button>
+            )}
+
+            {/* "With AI" 버튼 */}
+            {!this.props.mobile && (
+              <Button variant="info" onClick={this.handleAImodePageClicked} className="withAIbutton">
+                With AI
+              </Button>
+            )}
 
             
             <InputGroup style={{ maxWidth: "70%", margin: "10px auto" }}>
               <FormControl
               
                 disabled={this.props.mobile}
-                placeholder="Enter lobby code to join a game"
+                placeholder="Enter room code to join a game !"
                 value={this.state.gameCode}
                 onChange={this.handleGameCodeChange}
                 aria-label="Lobby Code"
@@ -191,6 +220,8 @@ class HomePage extends React.Component {
               </InputGroup.Append>
             </InputGroup>
 
+            
+
             <Overlay 
               target={this.joinButtonTarget}
               show={this.state.showRoomNotFound}
@@ -202,33 +233,7 @@ class HomePage extends React.Component {
               </Popover>
             </Overlay> 
             
-            <Accordion defaultActiveKey="0" className="info"> 
-              <Card>
-                <Card.Header>
-                  <Accordion.Toggle as={Button} variant="link" eventKey="0">
-                    How to Play good~
-                  </Accordion.Toggle>
-                </Card.Header>
-                <Accordion.Collapse eventKey="0">
-                  <Card.Body>
-                    Create a game lobby and invite your friends to play or join
-                    an existing lobby above. Adjust the settings to your liking
-                    then start the game. When it's your turn to draw, choose one
-                    of the three words and visualize it before the time runs
-                    out. The more people that get the word right, the more
-                    points you win! When somebody else is drawing, type your
-                    guess into the chat to gain points. Be quick, the earlier
-                    you guess a word the more points you get! <br />
-                    <u>Tip:</u> hints will appear above the canvas as time
-                    passes. <br />
-                    <u>Note:</u> if you a player is making you feel
-                    uncomfortable at anytime, click their card on the left to
-                    report them
-                  </Card.Body>
-                </Accordion.Collapse>
-              </Card>
-            </Accordion>
-            
+  
           </div>
         </div>
       );

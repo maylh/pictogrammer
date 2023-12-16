@@ -1,3 +1,4 @@
+// GameLobbyPage.js
 import React from "react";
 import "../styles/GameLobbyPage.css";
 import { Form, InputGroup, Col, Button } from "react-bootstrap";
@@ -5,8 +6,21 @@ import constants from "../Utils/Constants";
 import Modal from "react-bootstrap/Modal";
 import { withRouter, Link, Redirect } from "react-router-dom";
 
+import DefaultProfile from "../images/blank_profile.png";
+import image1 from "../images/profileImg/1.png";
+import image2 from "../images/profileImg/2.png";
+import image3 from "../images/profileImg/3.png";
+import image4 from "../images/profileImg/4.png";
+import image5 from "../images/profileImg/5.png";
+import image6 from "../images/profileImg/6.png";
+
 //takes in prop isHost: bool
 class GameLobbyPage extends React.Component {
+
+  // 이미지 배열 정의
+  images = [image1, image2, image3, image4, image5, image6];
+
+
   constructor(props) {
     super(props);
     this.state = {
@@ -15,24 +29,7 @@ class GameLobbyPage extends React.Component {
       customWords: "", //TODO: Need handle this in the backend
       roomLink: this.props.match.params.lobbyID,
       numRoundsOptions: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-      drawingTimeOptions: [
-        5,
-        30,
-        45,
-        60,
-        75,
-        90,
-        100,
-        115,
-        130,
-        145,
-        160,
-        175,
-        190,
-        200,
-        215,
-        230,
-      ],
+      drawingTimeOptions: [10, 20, 30, 40, 50, 60],
       roomLinkValue: "hover to see lobby link",
       modalShow: false,
     };
@@ -262,15 +259,9 @@ class GameLobbyPage extends React.Component {
                     )}
 
                     <img
-                      className="player-pfp"
-                      src={
-                        player.profileKey &&
-                        player.profileKey > 0 &&
-                        player.profileKey <= 10
-                          ? `https://pokeres.bastionbot.org/images/pokemon/${player.profileKey}.png`
-                          : "https://play.nintendo.com/images/profile-kirby-kirby.7bf2a8f2.aead314d58b63e27.png"
-                      }
-                      alt="pfp"
+                      className="player-profile-image"
+                      src={this.images[player.profileKey - 1] || DefaultProfile}
+                      alt="no iamge"
                     ></img>
                     <div>{player.name}</div>
                   </div>

@@ -1,4 +1,3 @@
-//server is created by socket and express//
 require("dotenv").config();
 const cookieSession = require("cookie-session");
 
@@ -25,6 +24,35 @@ const cors = require("cors");
 
 const LobbyManager = require("./src/Game/Manager")();
 const socket_handler = require("./src/socket");
+
+const path = require('path');
+
+
+// 이미지 파일을 상대 경로로 제공
+app.use('/images/profileImg', express.static(path.join(__dirname, 'client', 'src', 'images', 'profileImg')));
+
+// 클라이언트에서 요청한 파일명과 일치하는 이미지를 서버에서 제공
+app.get('/images/profileImg/:filename', (req, res) => {
+  const requestedFileNameWithHash = req.params.filename;
+  const requestedFileName = removeHashFromFileName(requestedFileNameWithHash);
+  const imagePath = path.join(__dirname, 'client', 'src', 'images', 'profileImg', requestedFileName);
+
+  res.sendFile(imagePath, {
+    headers: {
+      'Content-Disposition': `inline; filename=${requestedFileName}`,
+    },
+  });
+});
+
+// 해시 값을 제거한 파일명 추출하는 함수
+function removeHashFromFileName(fileNameWithHash) {
+  const fileNameParts = fileNameWithHash.split('.');
+  if (fileNameParts.length === 2) {
+    return fileNameParts[1];
+  }
+  return fileNameWithHash;
+}
+
 
 app.use(
   cookieSession({
@@ -77,6 +105,8 @@ app.use("/lobby", lobbyRouter(LobbyManager));
 app.use("/profile", profileRouter);
 app.use("/report", reportRouter);
 app.use("/test", testsRouter);
+
+
 
 io.on("connection", socket_handler(LobbyManager, io));
 

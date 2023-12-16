@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import AuthContext from "../context/AuthContext";
 import "../styles/loginPage.css";
-import logo from "../images/INKY.png";
+import logo from "../images/logo.png";
 
 class BanPage extends Component {
     render() {
@@ -17,7 +17,7 @@ class BanPage extends Component {
                 </div>
               </div>
             </div>
-          )
+          
         </React.Fragment>
       );
     }

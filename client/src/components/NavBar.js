@@ -23,16 +23,15 @@ class NavBar extends React.Component {
             Match History
           </Button>
         </Link>
-        
-        <Link to="/dictionary">
-          <Button variant="outline-dark" onClick={this.props.dictionary}>
-            Dictionary
-          </Button>
-        </Link>
-
         <Link to="/profile">
           <Button variant="outline-dark" onClick={this.props.profile}>
-            View Profile
+            My Profile
+          </Button>
+        </Link>
+    
+        <Link to="/dict">
+          <Button variant="outline-dark" onClick={this.props.dict}>
+            My dictionary
           </Button>
         </Link>
 
@@ -40,13 +39,8 @@ class NavBar extends React.Component {
           Logout
         </Button>
         
-        {this.props.showCreateGame ? (
-          <Button variant="info" onClick={this.props.createGameClick}>
-            Create Game
-          </Button>
-        ) : (
-          ""
-        )}
+
+        
         {this.props.authCreds.auth.user.role ? (
           <Link to="/report">
             <Button variant="outline-dark" onClick={this.props.report}>
@@ -57,13 +51,6 @@ class NavBar extends React.Component {
           ""
         )}
 
-        {this.props.showCreateGame ? (
-          <Button variant="info" onClick={this.props.withAI}>
-            With AI
-          </Button>
-        ) : (
-          ""
-        )}
       </div>
       
     );

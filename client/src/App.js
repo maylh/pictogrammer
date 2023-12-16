@@ -11,7 +11,7 @@ import Game from "./pages/Game";
 import AdminPage from "./pages/AdminPage";
 import BanPage from "./pages/BanPage";
 import MatchHistoryPage from "./pages/MatchHistoryPage";
-import dictionaryPage from "./pages/dictionaryPage";
+import DictPage from "./pages/DictPage";
 
 export default class App extends Component {
   render() {
@@ -25,7 +25,7 @@ export default class App extends Component {
             <ProtectedRoute exact path="/profile" component={ProfilePage} />
             <ProtectedRoute exact path="/game/:lobbyID" component={Game} />
             <ProtectedRoute exact path="/history" component={MatchHistoryPage} />
-            <ProtectedRoute exact path="/dictionary" component={dictionaryPage} />
+            <ProtectedRoute exact path="/dict" component={DictPage} />
             <ProtectedRoute exact path="/withAI" component={AImodePage} />
             <ProtectedRoute exact path="/report" component={AdminPage} />
           

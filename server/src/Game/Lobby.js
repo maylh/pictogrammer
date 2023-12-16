@@ -3,7 +3,20 @@ const db = require("../../config/db");
 const constants = require("../Constants");
 let word_list = require("./word-list");
 const fs = require('fs');
-let jsonData={};
+
+
+// 'dictionaries' 컬렉션을 만듭니다.
+const collectionRef = db.collection("dictionaries");
+
+// // 'dictionary' 문서를 만듭니다.
+// const docRef = collectionRef.doc("dictionary");
+
+//   // 'id'와 'word'를 문서에 설정
+//   docRef.set({
+//     id: user_id,
+//     word: this.word,
+//   });
+
 
 
 class Lobby {
@@ -110,74 +123,77 @@ class Lobby {
     }, 1000);
   }
 
-  //사전 중복되는 문장 제거
-  dictionarySetup()
-  {
-    const filePath = 'C:\\Users\\kimsi\\OneDrive\\바탕 화면\\pictogrammer-master\\server\\src\\Game\\dictionary.txt';
 
-        // 파일 읽기
-        fs.readFile(filePath, 'utf8', (err, data) => {
-          if (err) {
-            console.error('파일을 읽는 중 오류가 발생했습니다.', err);
-            return;
-          }
+   //사전 중복되는 문장 제거
+   dictionarySetup()
+   {
+     const filePath = 'C:\\Users\\kimsi\\OneDrive\\바탕 화면\\pictogrammer-master\\server\\src\\Game\\dictionary.txt';
+ 
+         // 파일 읽기
+         fs.readFile(filePath, 'utf8', (err, data) => {
+           if (err) {
+             console.error('파일을 읽는 중 오류가 발생했습니다.', err);
+             return;
+           }
+ 
+           // 파일 내용이 없을 때
+           if (!data.trim()) {
+             console.log('파일이 비어있습니다.');
+             return;
+           }
+ 
+           const lines = data.split('\n');
+           const uniqueLines = Array.from(new Set(lines)); // 중복 제거
+ 
+           // 중복을 제거한 데이터를 다시 문자열로 변환
+           const updatedData = uniqueLines.join('\n');
+ 
+           // 파일에 쓰기
+           fs.writeFile(filePath, updatedData, 'utf8', (writeErr) => {
+             if (writeErr) {
+               console.error('파일에 데이터를 쓰는 중 오류가 발생했습니다.', writeErr);
+               return;
+             }
+             console.log('중복된 문장이 제거되었습니다.');
+           });
+         });
+   }
+ 
+   dictionarySetup2()
+   {
+     const filePath = 'C:\\Users\\kimsi\\OneDrive\\바탕 화면\\pictogrammer-master\\server\\src\\Game\\dictionary.txt';
+ 
+         // 파일 읽기
+         fs.readFile(filePath, 'utf8', (err, data) => {
+           if (err) {
+             console.error('파일을 읽는 중 오류가 발생했습니다.', err);
+             return;
+           }
+ 
+           // 파일 내용이 없을 때
+           if (!data.trim()) {
+             console.log('파일이 비어있습니다.');
+             return;
+           }
+ 
+           const lines = data.split('\n');
+           const uniqueLines = Array.from(new Set(lines)); // 중복 제거
+ 
+           // 중복을 제거한 데이터를 다시 문자열로 변환
+           const updatedData = uniqueLines.join('\n');
+ 
+           // 파일에 쓰기
+           fs.writeFile(filePath, updatedData, 'utf8', (writeErr) => {
+             if (writeErr) {
+               console.error('파일에 데이터를 쓰는 중 오류가 발생했습니다.', writeErr);
+               return;
+             }
+             console.log('중복된 문장이 제거되었습니다.');
+           });
+         });
+   }
 
-          // 파일 내용이 없을 때
-          if (!data.trim()) {
-            console.log('파일이 비어있습니다.');
-            return;
-          }
 
-          const lines = data.split('\n');
-          const uniqueLines = Array.from(new Set(lines)); // 중복 제거
-
-          // 중복을 제거한 데이터를 다시 문자열로 변환
-          const updatedData = uniqueLines.join('\n');
-
-          // 파일에 쓰기
-          fs.writeFile(filePath, updatedData, 'utf8', (writeErr) => {
-            if (writeErr) {
-              console.error('파일에 데이터를 쓰는 중 오류가 발생했습니다.', writeErr);
-              return;
-            }
-            console.log('중복된 문장이 제거되었습니다.');
-          });
-        });
-  }
-
-  dictionarySetup2()
-  {
-    const filePath = 'C:\\Users\\kimsi\\OneDrive\\바탕 화면\\pictogrammer-master\\server\\src\\Game\\dictionary.txt';
-
-        // 파일 읽기
-        fs.readFile(filePath, 'utf8', (err, data) => {
-          if (err) {
-            console.error('파일을 읽는 중 오류가 발생했습니다.', err);
-            return;
-          }
-
-          // 파일 내용이 없을 때
-          if (!data.trim()) {
-            console.log('파일이 비어있습니다.');
-            return;
-          }
-
-          const lines = data.split('\n');
-          const uniqueLines = Array.from(new Set(lines)); // 중복 제거
-
-          // 중복을 제거한 데이터를 다시 문자열로 변환
-          const updatedData = uniqueLines.join('\n');
-
-          // 파일에 쓰기
-          fs.writeFile(filePath, updatedData, 'utf8', (writeErr) => {
-            if (writeErr) {
-              console.error('파일에 데이터를 쓰는 중 오류가 발생했습니다.', writeErr);
-              return;
-            }
-            console.log('중복된 문장이 제거되었습니다.');
-          });
-        });
-  }
 
   startTimer() {
     this.io.to(this.id).emit("startTimer");
@@ -189,7 +205,6 @@ class Lobby {
         // console.log("timer now:", this.timer);
       } else {
         clearInterval(this.interval);
-        this.dictionarySetup();
         this.endTurn();
       }
     }, 500);
@@ -200,12 +215,6 @@ class Lobby {
    * all the guesser guessed the word, or when
    * the drawer disconnects
    */
-  
-
-
-
-
-  
   async endTurn() {
     await this.sleep(1000);
     clearInterval(this.interval); // Clear interval
@@ -226,7 +235,7 @@ class Lobby {
       }
     }
 
-
+   
     async function getDictionaryData() {
       try {
         const snapshot = await db.collection('dictionary').get();
@@ -253,7 +262,6 @@ class Lobby {
         console.error('Error:', error);
         // 에러 발생 시 처리
       });
-
 
 
     // Clear canvas
@@ -318,13 +326,6 @@ class Lobby {
     }
   }
 
-
-
-
-
-
-
-  
   joinPlayer(player_info, socket_id) {
     if (!this.players.has(player_info.id)) {
       // Create new player record in players list
@@ -660,75 +661,39 @@ class Lobby {
     );
   }
 
-    //function writing to dictionary
-    /*writeWordToDictionary(user_id) {
-      const filePath = 'C:\\Users\\kimsi\\OneDrive\\바탕 화면\\pictogrammer-master\\server\\src\\Game\\dictionary.json';
-    
-   // 새로운 데이터
-              const newData = {
-                sentence: user_id,
-                additionalInfo: this.word
-              };
 
-              // 기존 파일 데이터 읽기
-              fs.readFile(filePath, 'utf8', (err, data) => {
-                if (err) {
-                  console.error('파일을 읽는 중 오류가 발생했습니다.', err);
-                  return;
-                }
+  writeWordToDictionary(user_id) {
+    const filePath = 'C:\\Users\\kimsi\\OneDrive\\바탕 화면\\pictogrammer-master\\server\\src\\Game\\dictionary.txt';
+  
+    // 새로운 데이터
+    const newData = {
+      sentence: user_id,
+      additionalInfo: this.word
+    };
+  
+    //이미 단어가 단어장에 저장되어있는 경우//
 
-                let jsonData = {};
-                try {
-                  // 기존 데이터 파싱
-                  jsonData = JSON.parse(data);
-                } catch (parseErr) {
-                  console.error('JSON 데이터를 파싱하는 중 오류가 발생했습니다.', parseErr);
-                  return;
-                }
-
-                // 새로운 데이터 추가
-                jsonData.newSentence = newData.sentence;
-                jsonData.moreInfo = newData.additionalInfo;
-
-                // 업데이트된 데이터를 JSON 문자열로 변환
-                const updatedData = JSON.stringify(jsonData, null, 2);
-
-                // 파일에 쓰기
-                fs.writeFile(filePath, updatedData, 'utf8', (writeErr) => {
-                  if (writeErr) {
-                    console.error('파일에 데이터를 쓰는 중 오류가 발생했습니다.', writeErr);
-                    return;
-                  }
-                  console.log('파일에 문장이 성공적으로 입력되었습니다.');
-                });
-              });
-
-    }*/
+    // 새로운 데이터를 문자열로 변환
+    const newSentence = `${newData.sentence} - ${newData.additionalInfo}\n`;
+  
+    // 파일에 쓰기
+    fs.appendFile(filePath, newSentence, 'utf8', (err) => {
+      if (err) {
+        console.error('파일에 데이터를 추가하는 중 오류가 발생했습니다.', err);
+        return;
+      }
+      console.log('파일에 문장이 성공적으로 추가되었습니다.');
+    });
 
 
-    writeWordToDictionary(user_id) {
-      const filePath = 'C:\\Users\\kimsi\\OneDrive\\바탕 화면\\pictogrammer-master\\server\\src\\Game\\dictionary.txt';
-    
-      // 새로운 데이터
-      const newData = {
-        sentence: user_id,
-        additionalInfo: this.word
-      };
-    
-      //이미 단어가 단어장에 저장되어있는 경우//
+// 'id'와 'word'를 컬렉션에 추가
+  collectionRef.add({
+  id: user_id,
+  word: this.word,
+  });
 
-      // 새로운 데이터를 문자열로 변환
-      const newSentence = `${newData.sentence} - ${newData.additionalInfo}\n`;
-    
-      // 파일에 쓰기
-      fs.appendFile(filePath, newSentence, 'utf8', (err) => {
-        if (err) {
-          console.error('파일에 데이터를 추가하는 중 오류가 발생했습니다.', err);
-          return;
-        }
-        console.log('파일에 문장이 성공적으로 추가되었습니다.');
-      });
-    }
+  }
+
 
 
   handleCorrectGuess(user_id) {
@@ -738,7 +703,6 @@ class Lobby {
       this.players.get(this.drawer).score += Math.round(100/this.players.size);
 
       if (this.players_guessed.size === this.connected_players.size - 1) {
-        //this.dictionarySetup();
         this.endTurn();
       }
     }
@@ -753,16 +717,12 @@ class Lobby {
 
       return true;
     }
-    else{
     return false;
-    }
   }
 
   sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
   }
 }
-
-
 
 module.exports = Lobby;

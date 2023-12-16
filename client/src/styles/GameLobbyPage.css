@@ -42,9 +42,11 @@
   overflow-wrap: break-word;
 }
 
-.player-pfp {
+.player-profile-image {
   width: 80px;
   margin: auto;
+  margin-top : 15px;
+  margin-bottom: 15px;
 }
 
 .settings-form {

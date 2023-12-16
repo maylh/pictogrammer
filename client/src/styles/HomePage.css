@@ -26,14 +26,25 @@
   justify-content: space-around;
 }
 
-.info {
-  padding-top: 10px;
-  text-align: start;
+.createGamebutton {
+  width: 20%;
+  margin : auto;
+  margin-top: 10px;
 }
+
+.withAIbutton {
+  width: 20%;
+  margin : auto;
+  margin-top: 10px;
+  margin-bottom : 25px;
+}
+
 
 .profile-picture {
   Width: 10%;
   margin: 20px auto;
+  margin-top : 35px;
+  margin-bottom: 50px;
 }
 
 .homepage-content .card-header.collapsed {

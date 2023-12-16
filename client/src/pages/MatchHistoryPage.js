@@ -58,8 +58,18 @@ class MatchHistoryPage extends React.Component {
   }
 
   getUserScore(match, username) {
-    return match.scores.find((obj) => obj.name === username).score;
+    const userScoreObject = match.scores.find((obj) => obj.name === username);
+  
+    if (userScoreObject) {
+      return userScoreObject.score;
+    } else {
+      // 찾은 객체가 없는 경우에 대한 처리
+      console.error(`User score not found for username: ${username}`);
+      // 또는 기본값을 반환하거나 다른 오류 처리 방법을 선택할 수 있음
+      return 0; // 예시로 0을 반환
+    }
   }
+  
 
   render() {
     const user = this.props.authCreds.auth.user;
@@ -99,7 +109,7 @@ class MatchHistoryPage extends React.Component {
                             <div className="game-overview" key={index}>
                               <div className="game-record">
                                 <h2>
-                                  You placed:{" "}
+                                  Your Rank : {" "}
                                   {this.getUserPlacementString(
                                     match,
                                     user.name

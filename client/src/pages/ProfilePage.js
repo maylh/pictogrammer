@@ -5,25 +5,33 @@ import NavBar from "../components/NavBar";
 import "../styles/ProfilePage.css";
 import AuthContext from "../context/AuthContext";
 import Dialog from "react-bootstrap-dialog";
+import DefaultProfile from "../images/blank_profile.png";
+import image1 from "../images/profileImg/1.png";
+import image2 from "../images/profileImg/2.png";
+import image3 from "../images/profileImg/3.png";
+import image4 from "../images/profileImg/4.png";
+import image5 from "../images/profileImg/5.png";
+import image6 from "../images/profileImg/6.png";
 
 class ProfilePage extends React.Component {
+  // 이미지 배열 정의
+  images = [image1, image2, image3, image4, image5, image6];
+
   constructor(props) {
     super(props);
     this.state = {
       userUsername: this.props.authCreds.auth.user.name,
-      userImageDisplay: this.props.authCreds.auth.user.profileKey
-        ? this.imageWebLink(this.props.authCreds.auth.user.profileKey)
-        : "https://play.nintendo.com/images/profile-kirby-kirby.7bf2a8f2.aead314d58b63e27.png",
+      userImageIndex: this.props.authCreds.auth.user.profileKey,
       modalShow: false,
-      userImageDisplayIndex: this.props.authCreds.auth.user.profileKey,
     };
+
     this.usernameChange = this.usernameChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleProfilePicture = this.handleProfilePicture.bind(this);
     this.setModalShow = this.setModalShow.bind(this);
     this.handleProfilePick = this.handleProfilePick.bind(this);
-    this.imageWebLink = this.imageWebLink.bind(this);
   }
+
   usernameChange(event) {
     this.setState({
       userUsername: event.target.value,
@@ -31,66 +39,55 @@ class ProfilePage extends React.Component {
   }
 
   handleProfilePicture() {
-    const pokemons_number = 10;
-    const pokemonImgList = [];
-
-    for (let i = 1; i <= pokemons_number; i++) {
-      pokemonImgList.push(
-        <img
-          key={i}
-          id={i}
-          className="pokemonImg"
-          src={this.imageWebLink(i)}
-          onClick={this.handleProfilePick}
-        ></img>
-      );
-    }
-    return pokemonImgList;
+    return this.images.map((image, index) => (
+      <img
+        key={index + 1}
+        id={index + 1}
+        className="pokemonImg"
+        src={image}
+        onClick={this.handleProfilePick}
+        alt={`이미지 ${index + 1}`}
+        style={{ margin: "10px 20px 15px 15px", width: "120px", height: "140px" }}
+      ></img>
+    ));
   }
+
   handleProfilePick(event) {
     this.setState({
-      userImageDisplayIndex: event.target.id,
-      userImageDisplay: this.imageWebLink(event.target.id),
+      userImageIndex: parseInt(event.target.id, 10),
       modalShow: false,
     });
   }
-  imageWebLink(id) {
-    if (id && id > 0 && id <= 10) {
-      return `https://pokeres.bastionbot.org/images/pokemon/${id}.png`;
-    }
-    else {
-      return "https://play.nintendo.com/images/profile-kirby-kirby.7bf2a8f2.aead314d58b63e27.png"
-    }
 
-  }
   handleSubmit() {
-    fetch(
-      `http://localhost:8888/profile/change/name?userID=${this.props.authCreds.auth.user.id}&newName=${this.state.userUsername}&userPicture=${this.state.userImageDisplayIndex}`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          // "Access-Control-Allow-Credentials": true,
-        },
-      }
-    )
+    const { authCreds } = this.props;
+    const { id } = authCreds.auth.user;
+    const { userUsername, userImageIndex } = this.state;
+
+    fetch(`http://localhost:8888/profile/change/name?userID=${id}&newName=${userUsername}&userPicture=${userImageIndex}`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Credentials": true,
+      },
+    })
       .then((response) => {
         if (response.status === 200) return response.json();
         throw new Error("failed create new room");
       })
       .then((responseJson) => {
         console.log(responseJson);
-        this.props.authCreds.getUserInfo();
+        authCreds.getUserInfo();
         this.dialog.showAlert("Your update was successful!");
-        // redirect to lobby
       })
       .catch((error) => {
         console.log(error);
         this.dialog.showAlert("Something went wrong please try again.");
       });
   }
+
   setModalShow(see) {
     this.setState({
       modalShow: see,
@@ -98,21 +95,20 @@ class ProfilePage extends React.Component {
   }
 
   render() {
+    const { userUsername, userImageIndex, modalShow } = this.state;
+    const selectedImage = this.images[userImageIndex - 1];
+
     return (
       <div className="page">
         <div className="content">
-          <NavBar
-            className="nav"
-            showCreateGame={false}
-            showHome={true}
-          ></NavBar>
+          <NavBar className="nav" showHome={true}></NavBar>
           <div className="profilecontainer">
             <div className="profile">
               <div className="picture">
                 <img
-                  className="profile-picture"
-                  src={this.state.userImageDisplay}
-                  alt="pfp"
+                  className="profile-picture-profile-page"
+                  src={selectedImage || DefaultProfile}
+                  alt="no image"
                 ></img>
                 <Button
                   variant="primary"
@@ -123,11 +119,11 @@ class ProfilePage extends React.Component {
                 </Button>
               </div>
               <div className="name">
-                <p className="nameTitle">Display Name: </p>
+                <p className="nameTitle">Name :</p>
                 <input
                   className="nameInput"
                   type="text"
-                  value={this.state.userUsername}
+                  value={userUsername}
                   onChange={this.usernameChange}
                 ></input>
               </div>
@@ -137,7 +133,7 @@ class ProfilePage extends React.Component {
                 className="savebutton"
                 onClick={this.handleSubmit}
               >
-                Save Changes
+                Save
               </Button>
               <Dialog
                 ref={(component) => {
@@ -147,10 +143,7 @@ class ProfilePage extends React.Component {
             </div>
           </div>
 
-          <Modal
-            show={this.state.modalShow}
-            onHide={() => this.setModalShow(false)}
-          >
+          <Modal show={modalShow} onHide={() => this.setModalShow(false)}>
             <Modal.Header>Icons</Modal.Header>
             <Modal.Body>
               <div id="profilePictureContainer" className="modalBody">
@@ -167,4 +160,5 @@ class ProfilePage extends React.Component {
     );
   }
 }
+
 export default AuthContext(ProfilePage);
