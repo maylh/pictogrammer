@@ -11,13 +11,17 @@ passport.serializeUser(function (user, done) {
 passport.deserializeUser(function (id, done) {
   const users = db.collection("Users");
 
+  console.log("Trying to deserialize user with ID:", id);
+
   users
     .doc(id)
     .get()
     .then((user) => {
+      console.log("Found user in Firestore:", user.data());
       done(null, user.data());
     })
     .catch((e) => {
+      console.error("Failed to deserialize user. Error:", e);
       done(new Error("Failed to deserialize a user"));
     });
 });

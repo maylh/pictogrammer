@@ -35,6 +35,10 @@ class Lobby {
     this.numberOfHints = 0;
 
     this.playing = false;
+
+    this.correctWords = [];
+
+    
   }
   findSocketId(playerID) {
     let sockedIdofPlayer;
@@ -127,12 +131,14 @@ class Lobby {
    * all the guesser guessed the word, or when
    * the drawer disconnects
    */
+  // Lobby 클래스의 endTurn 메서드 일부 수정
+
   async endTurn() {
     await this.sleep(1000);
     clearInterval(this.interval); // Clear interval
     this.io.to(this.id).emit("stopTimer");
     let endGame = false;
-
+  
     //check if all the players already had a turn to draw
     if (this.drawer_order.length === 0) {
       //check for last round
@@ -146,68 +152,76 @@ class Lobby {
         this.drawer_order = Array.from(this.connected_players.values());
       }
     }
-
+  
     // Clear canvas
     this.strokes.length = 0; // Clear the canvas
     this.io.to(this.id).emit("draw", { type: 1 }, this.strokes);
-
+  
     if (!endGame) {
-      this.newTurn();
-      this.notifier(); // Let all the players know that turn ended
+      await this.newTurn(); 
+      await this.notifier();
     } else {
       this.state = constants.GAME_ENDED;
       this.round_state = 3;
       try {
-        const res = db.collection("Lobbies").doc(this.id).update({
+        const res = await db.collection("Lobbies").doc(this.id).update({
           state: constants.GAME_ENDED,
         });
         setTimeout(() => {
           this.io.to(this.id).emit("state-change", constants.GAME_ENDED);
         }, 1000);
-        //this.io.to(this.id).emit("state-change", constants.GAME_ENDED);
       } catch (error) {
-        //TODO: Handle properly
         console.log("Cannot update lobby state in db ");
       }
-
+  
       try {
-        // Create new new Game document
+        // Create new Game document
         const game = await db.collection("Games").add({
           date: new Date(),
           rounds: this.rounds,
         });
-
+  
         console.log(`New game id ${game.id}`);
-
-        const game_col = db
-          .collection("Games")
-          .doc(game.id)
-          .collection("Scores");
-
-        const users = db.collection("Users");
-
+  
+        const gameCol = db.collection("Games").doc(game.id).collection("Scores");
         const batch = db.batch();
+  
+       
+        for (const player of this.players.values()) {
+          const correctWords = player.correctWords || [];
+          const userRef = db.collection("Users").doc(player.id);
+          batch.update(userRef, {
+            correctWords: [...new Set(correctWords.concat(player.correctWords || []))],
+            allCorrectWords: [...new Set(this.correctWords.concat(correctWords))]
+          });
 
-        const players = Array.from(this.players.values());
-        players.forEach((player) => {
-          const playerRef = game_col.doc(player.id);
-          batch.set(playerRef, { name: player.name, score: player.score });
-
-          const gameRef = users.doc(player.id).collection("Games").doc(game.id);
+  
+          const playerRef = gameCol.doc(player.id);
+          batch.set(playerRef, {
+            name: player.name,
+            score: player.score,
+            //correctWords: player.correctWords || [],
+          });
+  
+          const gameRef = db.collection("Users").doc(player.id).collection("Games").doc(game.id);
           batch.set(gameRef, { gameID: game.id });
-        });
-
-        const res = await batch.commit();
-        console.log("Successfully upload scores to db");
+        }
+  
+        await batch.commit();
+        console.log("Successfully uploaded scores to db");
       } catch (error) {
-        //TODO: Handle properly
-        console.log(`Something went wrong in uploading score... ${error}`);
+        console.log(`Something went wrong in uploading scores... ${error}`);
       }
+  
+      // Reset scores
       for (const value of this.players.values()) {
         value.score = 0;
-      }      
+        value.correctWords = [];
+      }
     }
   }
+  
+
 
   joinPlayer(player_info, socket_id) {
     if (!this.players.has(player_info.id)) {
@@ -460,10 +474,9 @@ class Lobby {
     return min + Math.floor(Math.random() * (max - min + 1));
   }
 
-  // returns array of 3 words from the list of words
+  // returns array of 3 words from the list of words - random
   getWordOptions() {
-    // removes last word from possible words to be chosen from
-    // will be added back
+    // 사용중인 단어 제외하고 남은 단어 리스트
     for (let i = 0; i < word_list.length; i++) {
       if (word_list[i] === this.word) {
         word_list.splice(i, 1);
@@ -544,17 +557,52 @@ class Lobby {
     );
   }
 
-  handleCorrectGuess(user_id) {
-    if (!this.players_guessed.has(user_id)) {
-      this.players.get(user_id).score += this.calculatePoints();
+
+  // Lobby 클래스의 handleCorrectGuess 메서드 일부 수정
+
+  // Lobby 클래스의 handleCorrectGuess 메서드 일부 수정
+
+handleCorrectGuess(user_id) {
+  if (!this.players_guessed.has(user_id)) {
+    const player = this.players.get(user_id);
+    const points = this.calculatePoints();
+
+    player.score += points;
+
+    // 사용자의 문서를 "Dict" 컬렉션에서 가져옴
+    const userDictDoc = db.collection("Dict").doc(user_id);
+
+    // 충돌을 방지하기 위해 사용자의 correctWords 필드를 원자적으로 업데이트
+    return db.runTransaction(async (transaction) => {
+      const userDict = await transaction.get(userDictDoc);
+      const correctWords = userDict.exists ? userDict.data().correctWords || [] : [];
+
+      // 단어가 correctWords 배열에 이미 포함되어 있는지 확인
+      if (!correctWords.includes(this.word)) {
+        correctWords.push(this.word);
+
+        // 사용자 문서의 correctWords 필드를 업데이트
+        transaction.set(userDictDoc, { correctWords });
+      }
+
+      // 메모리 내에서 player의 correctWords 배열을 업데이트
+      player.correctWords = correctWords;
+
       this.players_guessed.add(user_id);
-      this.players.get(this.drawer).score += Math.round(100/this.players.size);
+
+      const drawer = this.players.get(this.drawer);
+      drawer.score += Math.round(100 / this.players.size);
 
       if (this.players_guessed.size === this.connected_players.size - 1) {
         this.endTurn();
       }
-    }
+
+      console.log("맞춘 단어:", player.correctWords);
+    });
   }
+}
+
+
 
   // this should maybe be refactored
   checkGuess(user_id, guess) {
@@ -568,6 +616,7 @@ class Lobby {
   sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
   }
+
 }
 
 module.exports = Lobby;

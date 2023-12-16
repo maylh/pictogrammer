@@ -46,7 +46,6 @@ class GameEndingPage extends React.Component {
       displayarray.push(
         <Card key={i} id={i} className="player" style={{ width: "6rem" }}>
           <Card.Img
-            className="player-profile-image-ending"
             variant="top"
             src={this.images[arr[i].profileKey - 1] || DefaultProfile}
             alt="no image"

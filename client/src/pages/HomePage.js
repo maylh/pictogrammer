@@ -52,6 +52,11 @@ class HomePage extends React.Component {
     // TODO: redirect to profile page
   }
 
+  handleMyDictionaryClicked(){
+    // TODO : redirect to profile page
+    console.log("handleMyDictionaryClicked called");
+  }
+
   handleAImodePageClicked(){
     console.log("handleAImodePageClicked called");
     const user = this.props.authCreds.auth.user;
@@ -172,8 +177,7 @@ class HomePage extends React.Component {
         <div className="page">
           <div className="homepage-content">
 
-            <NavBar
-            ></NavBar>
+            <NavBar></NavBar> {/* 상단바 */}
 
             <h3 style={{ marginTop: "40px" }}>Hello, {user.name || "kirby placeholder"} ! </h3>
 

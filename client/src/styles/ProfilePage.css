@@ -95,6 +95,8 @@
 
 .profile-picture-profile-page {
   Width: 80%;
+  width: 200px;
+  height: auto;
   margin: auto;
   margin-bottom: 50px;
 }
