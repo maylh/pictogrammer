@@ -1,0 +1,22 @@
+.RectangleContainer {
+    width: 100vw;
+    text-align: center;
+    font-family: sans-serif;
+    margin-top: 2vh;
+}
+
+.Rectangle {
+    margin-left: auto;
+    margin-right: auto;
+    padding: 15px;
+    font-size: small;
+    width: fit-content !important;
+}
+
+.RectangleMob{
+    width: 70vw;
+}
+
+.RectangleDesktop{
+    width: 20vw;
+}

@@ -146,6 +146,23 @@ router.get("/matches", async (req, res) => {
   }
 });
 
+router.get("/userDict/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const userDictRef = await db.collection("Dict").doc(userId).get();
+    if (userDictRef.exists) {
+      const correctWords = userDictRef.data().correctWords || [];
+      res.json({ success: true, correctWords });
+    } else {
+      res.json({ success: false, error: "User dictionary not found" });
+    }
+  } catch (error) {
+    console.error("Error getting user dictionary:", error);
+    res.json({ success: false, error: "Internal server error" });
+  }
+});
+
 router.post("/change/name", async (req, res) => {
   const user_id = req.query.userID;
   const new_name = req.query.newName;
@@ -171,5 +188,7 @@ router.post("/change/name", async (req, res) => {
       })
     );
 });
+
+
 
 module.exports = router;

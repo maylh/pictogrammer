@@ -14,6 +14,7 @@ import { Redirect, withRouter } from "react-router-dom";
 import BanPage from "./BanPage";
 import AuthContext from "../context/AuthContext";
 import { withDeviceDetect } from "../Utils/DeviceDetect";
+import { Link } from "react-router-dom";
 
 import DefaultProfile from "../images/blank_profile.png";
 import image1 from "../images/profileImg/1.png";
@@ -59,36 +60,7 @@ class HomePage extends React.Component {
 
   handleAImodePageClicked(){
     console.log("handleAImodePageClicked called");
-    const user = this.props.authCreds.auth.user;
-    fetch(
-      `http://localhost:8888/lobby/create?hostId=${user.id}&hostName=${user.name}`,
-      {
-        method: "POST",
-        // credentials: "include",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          // "Access-Control-Allow-Credentials": true,
-        },
-      }
-    )
-      .then((response) => {
-        if (response.status === 200) return response.json();
-        throw new Error("failed create new room");
-      })
-      .then((responseJson) => {
-        // redirect to lobby
-
-        const location = {
-          pathname: `/game/${responseJson.code}`,
-        };
-        this.props.history.push(location);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-      console.log("handleAImodePageClicked called done");
+    
   }
 
   handleCreateGameClicked() {
@@ -195,12 +167,11 @@ class HomePage extends React.Component {
               </Button>
             )}
 
-            {/* "With AI" 버튼 */}
-            {!this.props.mobile && (
-              <Button variant="info" onClick={this.handleAImodePageClicked} className="withAIbutton">
-                With AI
-              </Button>
-            )}
+          <Link to="/withAI">
+          <Button variant="outline-dark" onClick={this.props.withAI} className="withAIbutton">
+            with AI
+          </Button>
+          </Link>
 
             
             <InputGroup style={{ maxWidth: "70%", margin: "10px auto" }}>

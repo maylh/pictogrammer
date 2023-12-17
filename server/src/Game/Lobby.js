@@ -192,7 +192,7 @@ class Lobby {
           const userRef = db.collection("Users").doc(player.id);
           batch.update(userRef, {
             correctWords: [...new Set(correctWords.concat(player.correctWords || []))],
-            allCorrectWords: [...new Set(this.correctWords.concat(correctWords))]
+            //allCorrectWords: [...new Set(this.correctWords.concat(correctWords))]
           });
 
   
@@ -551,14 +551,13 @@ class Lobby {
     this.numberOfHints = Math.round(numeberOfLetters * 0.25);
   }
 
+  // 점수 계산
   calculatePoints() {
     return Math.round(
       (1 - (1.0 * this.drawing_time - this.timer) / this.drawing_time) * 250
     );
   }
 
-
-  // Lobby 클래스의 handleCorrectGuess 메서드 일부 수정
 
   // Lobby 클래스의 handleCorrectGuess 메서드 일부 수정
 

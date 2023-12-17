@@ -1,81 +1,54 @@
-.game-lobby-page {
-    height: 95vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+@import url('https://fonts.googleapis.com/css2?family=Preahvihear&display=swap');
+
+
+.App {
+  font-family: 'Preahvihear', sans-serif;
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
   }
-  
-  .game-lobby-content {
-    text-align: start;
-    background-color: white;
-    display: flex;
-    flex-direction: row;
-    width: 90%;
-    max-width: 1200px;
-    height: 90%;
-    max-height: 90%;
-    margin: auto;
-    padding: 30px 50px;
-    border: 1px solid;
-    border-radius: 10px;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
   }
-  
-  .settings {
-    width: 50%;
-    padding-right: 30px;
-    border-right: 1px solid;
-    display: flex;
-    flex-direction: column;
+  to {
+    transform: rotate(360deg);
   }
-  
-  .players {
-    width: 50%;
-    padding: 40px;
+}
+
+@media (max-width: 1000px) {
+  * {
+    font-size: 12px;
   }
-  
-  .player-container {
-    width: 90px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    text-align: center;
-    overflow-wrap: break-word;
+}
+
+@media (max-height: 700px) {
+  * {
+    font-size: 12px;
   }
-  
-  .player-pfp {
-    width: 80px;
-    margin: auto;
-  }
-  
-  .settings-form {
-    padding: 10px;
-    margin-bottom: auto;
-    min-height: 70%;
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-  
-  .start-game-btn {
-    margin-top: 10px;
-    margin-left: 10px;
-    width: max-content;
-  }
-  
-  .leave-lobby-btn {
-    margin-top: 10px;
-    margin-left: auto;
-    width: max-content;
-  }
-  
-  .player-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  }
-  .kickButton {
-    width: 20px;
-    height: 20px;
-    text-align: center;
-    padding: 0 !important;
-    border-radius: 50% !important;
-  }
-  
+}

@@ -10,6 +10,9 @@ First, run the backend sever
 ```
 cd server
 node server.js
+
+cd pyServer
+Python -m uvicorn main:app --port 8008 --reload
 ```
 It should be running in `http://localhost:8888`
 
