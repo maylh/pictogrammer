@@ -10,20 +10,14 @@
 
 First, run the backend sever
 ```
-cd server
 node server.js
 ```
-It should be running in `http://localhost:8888`
-
+```
+Python -m uvicorn main:app --port 8008 --reload
+```
 
 Then, run the frontend server
 ```
-cd client
 npm start
 ```
-
-Exit
-'''
-ctrl+c
-'''
 
